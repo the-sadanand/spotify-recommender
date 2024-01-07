@@ -7,3 +7,4 @@ This repository captures the delivery timeline for a production-style MLOps reco
 - 2024-01-04 | feat: define track ingestion contract for playlist data
 - 2024-01-05 | ops: provision local developer environment for ML experiments
 - 2024-01-06 | ci: add first experiment validation checklist
+- 2024-01-07 | docs: outline offline training workflow and artifact schema
