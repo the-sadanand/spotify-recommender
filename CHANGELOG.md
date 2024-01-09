@@ -9,3 +9,4 @@ This repository captures the delivery timeline for a production-style MLOps reco
 - 2024-01-06 | ci: add first experiment validation checklist
 - 2024-01-07 | docs: outline offline training workflow and artifact schema
 - 2024-01-08 | feat: add synthetic playlist generator for demo mode
+- 2024-01-09 | fix: guard missing data directory during preprocessing
