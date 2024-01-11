@@ -11,3 +11,4 @@ This repository captures the delivery timeline for a production-style MLOps reco
 - 2024-01-08 | feat: add synthetic playlist generator for demo mode
 - 2024-01-09 | fix: guard missing data directory during preprocessing
 - 2024-01-10 | test: validate fallback behavior when input data is absent
+- 2024-01-11 | feat: build track and playlist vocabularies for embedding generation
