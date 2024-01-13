@@ -13,3 +13,4 @@ This repository captures the delivery timeline for a production-style MLOps reco
 - 2024-01-10 | test: validate fallback behavior when input data is absent
 - 2024-01-11 | feat: build track and playlist vocabularies for embedding generation
 - 2024-01-12 | perf: optimize playlist map generation for large datasets
+- 2024-01-13 | refactor: isolate vocabulary creation into reusable utilities
