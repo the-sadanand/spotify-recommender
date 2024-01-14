@@ -14,3 +14,4 @@ This repository captures the delivery timeline for a production-style MLOps reco
 - 2024-01-11 | feat: build track and playlist vocabularies for embedding generation
 - 2024-01-12 | perf: optimize playlist map generation for large datasets
 - 2024-01-13 | refactor: isolate vocabulary creation into reusable utilities
+- 2024-01-14 | feat: generate training triples with negative sampling
