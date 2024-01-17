@@ -17,3 +17,4 @@ This repository captures the delivery timeline for a production-style MLOps reco
 - 2024-01-14 | feat: generate training triples with negative sampling
 - 2024-01-15 | fix: prevent duplicate tracks from polluting playlist context
 - 2024-01-16 | perf: cap context windows to improve training stability
+- 2024-01-17 | test: cover dataset length and padding behavior
