@@ -21,3 +21,4 @@ This repository captures the delivery timeline for a production-style MLOps reco
 - 2024-01-18 | feat: implement PyTorch dataset for BPR training triples
 - 2024-01-19 | refactor: separate model, data, and training responsibilities
 - 2024-01-20 | build: add pinned requirements for reproducible environment
+- 2024-01-21 | ops: configure MLflow tracking defaults for local runs
