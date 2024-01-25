@@ -25,3 +25,4 @@ This repository captures the delivery timeline for a production-style MLOps reco
 - 2024-01-22 | feat: add two-tower playlist encoder and track encoder
 - 2024-01-23 | fix: reserve padding index in embedding tables
 - 2024-01-24 | perf: normalize embeddings before ranking
+- 2024-01-25 | feat: implement BPR loss for contrastive ranking
