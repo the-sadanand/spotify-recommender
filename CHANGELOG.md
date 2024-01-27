@@ -27,3 +27,4 @@ This repository captures the delivery timeline for a production-style MLOps reco
 - 2024-01-24 | perf: normalize embeddings before ranking
 - 2024-01-25 | feat: implement BPR loss for contrastive ranking
 - 2024-01-26 | test: verify accuracy calculation for negative sampling batches
+- 2024-01-27 | feat: add training loop with validation metrics
