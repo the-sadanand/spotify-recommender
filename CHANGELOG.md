@@ -32,3 +32,4 @@ This repository captures the delivery timeline for a production-style MLOps reco
 - 2024-01-29 | ops: log hyperparameters to MLflow each epoch
 - 2024-01-30 | feat: register model artifacts in MLflow tracking
 - 2024-01-31 | build: export track embeddings for fast approximate retrieval
+- 2024-02-01 | feat: fit GMM baseline for concept drift monitoring
