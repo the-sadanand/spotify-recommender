@@ -35,3 +35,4 @@ This repository captures the delivery timeline for a production-style MLOps reco
 - 2024-02-01 | feat: fit GMM baseline for concept drift monitoring
 - 2024-02-02 | ops: persist training metadata for online serving
 - 2024-02-03 | fix: handle missing playlist IDs when generating submission
+- 2024-02-04 | docs: describe model registry and artifact handoff flow
