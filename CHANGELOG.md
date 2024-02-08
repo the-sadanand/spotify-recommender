@@ -39,3 +39,4 @@ This repository captures the delivery timeline for a production-style MLOps reco
 - 2024-02-05 | build: add local training wrapper for reproducible runs
 - 2024-02-06 | ops: wire environment variables for data and artifact paths
 - 2024-02-07 | feat: add challenge submission generator
+- 2024-02-08 | fix: ensure valid playlist IDs are exported for downstream serving
