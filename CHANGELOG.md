@@ -45,3 +45,4 @@ This repository captures the delivery timeline for a production-style MLOps reco
 - 2024-02-11 | build: create multi-stage Dockerfile for lean runtime images
 - 2024-02-12 | ops: provision Redis cache and MLflow services with compose
 - 2024-02-13 | feat: expose API health endpoint for orchestration probes
+- 2024-02-14 | fix: resolve container networking for mlflow and redis
