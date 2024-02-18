@@ -49,3 +49,4 @@ This repository captures the delivery timeline for a production-style MLOps reco
 - 2024-02-15 | perf: shrink image size by removing build-only tooling
 - 2024-02-16 | ops: add readiness checks to cache and tracking services
 - 2024-02-17 | feat: load trained track embeddings during app startup
+- 2024-02-18 | feat: load saved GMM baseline during startup
