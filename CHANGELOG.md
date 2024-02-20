@@ -51,3 +51,4 @@ This repository captures the delivery timeline for a production-style MLOps reco
 - 2024-02-17 | feat: load trained track embeddings during app startup
 - 2024-02-18 | feat: load saved GMM baseline during startup
 - 2024-02-19 | fix: deserialize vocabulary dictionaries safely at runtime
+- 2024-02-20 | feat: load PyTorch model from MLflow run artifacts
