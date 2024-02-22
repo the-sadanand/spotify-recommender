@@ -53,3 +53,4 @@ This repository captures the delivery timeline for a production-style MLOps reco
 - 2024-02-19 | fix: deserialize vocabulary dictionaries safely at runtime
 - 2024-02-20 | feat: load PyTorch model from MLflow run artifacts
 - 2024-02-21 | ops: add graceful fallback when MLflow model is unavailable
+- 2024-02-22 | feat: implement Redis-backed playlist embedding cache
