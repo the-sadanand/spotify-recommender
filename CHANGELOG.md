@@ -56,3 +56,4 @@ This repository captures the delivery timeline for a production-style MLOps reco
 - 2024-02-22 | feat: implement Redis-backed playlist embedding cache
 - 2024-02-23 | fix: handle empty or invalid cache values safely
 - 2024-02-24 | feat: encode playlist context for top-k retrieval
+- 2024-02-25 | perf: use dot-product similarity over precomputed embeddings
