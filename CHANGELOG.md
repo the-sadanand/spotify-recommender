@@ -60,3 +60,4 @@ This repository captures the delivery timeline for a production-style MLOps reco
 - 2024-02-26 | fix: prevent duplicate tracks in recommendation outputs
 - 2024-02-27 | feat: add request validation for playlist IDs and top-k values
 - 2024-02-28 | ops: expose Prometheus counters for cache metrics
+- 2024-02-29 | feat: add latency histogram for recommendation endpoint
