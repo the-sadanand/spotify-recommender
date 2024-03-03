@@ -63,3 +63,4 @@ This repository captures the delivery timeline for a production-style MLOps reco
 - 2024-02-29 | feat: add latency histogram for recommendation endpoint
 - 2024-03-01 | feat: expose drift gauge for current KL divergence signal
 - 2024-03-02 | ops: add structured application logging around drift checks
+- 2024-03-03 | fix: avoid blocking latency on concept drift evaluation
