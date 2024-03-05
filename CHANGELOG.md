@@ -65,3 +65,4 @@ This repository captures the delivery timeline for a production-style MLOps reco
 - 2024-03-02 | ops: add structured application logging around drift checks
 - 2024-03-03 | fix: avoid blocking latency on concept drift evaluation
 - 2024-03-04 | feat: add metrics and health endpoints for monitoring
+- 2024-03-05 | docs: document Prometheus metrics and alert expectations
