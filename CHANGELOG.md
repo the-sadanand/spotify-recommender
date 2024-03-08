@@ -68,3 +68,4 @@ This repository captures the delivery timeline for a production-style MLOps reco
 - 2024-03-05 | docs: document Prometheus metrics and alert expectations
 - 2024-03-06 | feat: add drift simulation script for synthetic traffic bursts
 - 2024-03-07 | fix: handle missing playlist IDs in drift simulation
+- 2024-03-08 | test: verify cache hit behavior for repeated requests
