@@ -70,3 +70,4 @@ This repository captures the delivery timeline for a production-style MLOps reco
 - 2024-03-07 | fix: handle missing playlist IDs in drift simulation
 - 2024-03-08 | test: verify cache hit behavior for repeated requests
 - 2024-03-09 | test: validate 404 response for unknown playlists
+- 2024-03-10 | feat: connect offline training and online serving flows
