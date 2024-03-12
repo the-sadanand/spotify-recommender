@@ -72,3 +72,4 @@ This repository captures the delivery timeline for a production-style MLOps reco
 - 2024-03-09 | test: validate 404 response for unknown playlists
 - 2024-03-10 | feat: connect offline training and online serving flows
 - 2024-03-11 | ops: prepare model artifact handoff to inference runtime
+- 2024-03-12 | fix: correct default artifact path in container config
