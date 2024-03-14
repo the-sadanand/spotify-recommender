@@ -74,3 +74,4 @@ This repository captures the delivery timeline for a production-style MLOps reco
 - 2024-03-11 | ops: prepare model artifact handoff to inference runtime
 - 2024-03-12 | fix: correct default artifact path in container config
 - 2024-03-13 | refactor: centralize config values in environment-driven loader
+- 2024-03-14 | perf: reduce model initialization time during startup
