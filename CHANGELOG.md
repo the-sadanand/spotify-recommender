@@ -76,3 +76,4 @@ This repository captures the delivery timeline for a production-style MLOps reco
 - 2024-03-13 | refactor: centralize config values in environment-driven loader
 - 2024-03-14 | perf: reduce model initialization time during startup
 - 2024-03-15 | ops: add model reload path for new experiment artifacts
+- 2024-03-16 | docs: explain MLflow experiment tracking in project workflow
