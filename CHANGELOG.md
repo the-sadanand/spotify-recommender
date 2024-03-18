@@ -78,3 +78,4 @@ This repository captures the delivery timeline for a production-style MLOps reco
 - 2024-03-15 | ops: add model reload path for new experiment artifacts
 - 2024-03-16 | docs: explain MLflow experiment tracking in project workflow
 - 2024-03-17 | feat: add script to reconcile valid playlist IDs with submission
+- 2024-03-18 | fix: ensure deterministic random seed during GMM sampling
