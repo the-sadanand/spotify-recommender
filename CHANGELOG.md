@@ -80,3 +80,4 @@ This repository captures the delivery timeline for a production-style MLOps reco
 - 2024-03-17 | feat: add script to reconcile valid playlist IDs with submission
 - 2024-03-18 | fix: ensure deterministic random seed during GMM sampling
 - 2024-03-19 | perf: batch track embedding generation for CPU and GPU
+- 2024-03-20 | feat: add support for overriding training settings via env vars
