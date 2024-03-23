@@ -83,3 +83,4 @@ This repository captures the delivery timeline for a production-style MLOps reco
 - 2024-03-20 | feat: add support for overriding training settings via env vars
 - 2024-03-21 | ops: tune default training parameters for faster iteration
 - 2024-03-22 | refactor: clean up training logs with better summaries
+- 2024-03-23 | build: keep runtime dependencies pinned for reproducibility
