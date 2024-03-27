@@ -87,3 +87,4 @@ This repository captures the delivery timeline for a production-style MLOps reco
 - 2024-03-24 | docs: add monitoring runbook for service health and logs
 - 2024-03-25 | feat: add Docker healthcheck for API service
 - 2024-03-26 | ops: configure restart policy across compose services
+- 2024-03-27 | fix: correct MLflow endpoint exposure in docker stack
