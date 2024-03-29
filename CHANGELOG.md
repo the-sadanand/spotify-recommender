@@ -89,3 +89,4 @@ This repository captures the delivery timeline for a production-style MLOps reco
 - 2024-03-26 | ops: configure restart policy across compose services
 - 2024-03-27 | fix: correct MLflow endpoint exposure in docker stack
 - 2024-03-28 | perf: stabilize Redis memory usage with LRU policy
+- 2024-03-29 | feat: add persistent storage for MLflow and Redis volumes
