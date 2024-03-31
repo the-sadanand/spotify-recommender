@@ -91,3 +91,4 @@ This repository captures the delivery timeline for a production-style MLOps reco
 - 2024-03-28 | perf: stabilize Redis memory usage with LRU policy
 - 2024-03-29 | feat: add persistent storage for MLflow and Redis volumes
 - 2024-03-30 | docs: outline challenge dataset workflow and synthetic fallback
+- 2024-03-31 | fix: ensure synthetic track URIs remain consistent across modes
