@@ -98,3 +98,4 @@ This repository captures the delivery timeline for a production-style MLOps reco
 - 2024-04-04 | perf: precompute recommendation score matrix without reallocation
 - 2024-04-05 | fix: correct playlist embedding length handling for short sequences
 - 2024-04-06 | perf: remove redundant copies in batch embedding passes
+- 2024-04-07 | feat: add best validation loss tracking in training summary
