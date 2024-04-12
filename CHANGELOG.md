@@ -103,3 +103,4 @@ This repository captures the delivery timeline for a production-style MLOps reco
 - 2024-04-09 | refactor: unify model and inference code paths for consistency
 - 2024-04-10 | docs: describe offline training and online serving architecture
 - 2024-04-11 | ops: add service health checks to compose orchestration
+- 2024-04-12 | feat: add drift threshold configuration via env vars
