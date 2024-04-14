@@ -105,3 +105,4 @@ This repository captures the delivery timeline for a production-style MLOps reco
 - 2024-04-11 | ops: add service health checks to compose orchestration
 - 2024-04-12 | feat: add drift threshold configuration via env vars
 - 2024-04-13 | fix: ensure recent embedding buffer clears after drift checks
+- 2024-04-14 | perf: limit drift sampling to keep inference latency bounded
