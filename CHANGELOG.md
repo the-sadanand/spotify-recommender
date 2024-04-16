@@ -107,3 +107,4 @@ This repository captures the delivery timeline for a production-style MLOps reco
 - 2024-04-13 | fix: ensure recent embedding buffer clears after drift checks
 - 2024-04-14 | perf: limit drift sampling to keep inference latency bounded
 - 2024-04-15 | ops: add application logging at info and warning levels
+- 2024-04-16 | docs: update API examples for recommendation and health checks
