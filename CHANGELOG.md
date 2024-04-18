@@ -109,3 +109,4 @@ This repository captures the delivery timeline for a production-style MLOps reco
 - 2024-04-15 | ops: add application logging at info and warning levels
 - 2024-04-16 | docs: update API examples for recommendation and health checks
 - 2024-04-17 | feat: support top-k retrieval examples in command docs
+- 2024-04-18 | fix: handle recommendation counts smaller than requested top-k
