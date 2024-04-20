@@ -111,3 +111,4 @@ This repository captures the delivery timeline for a production-style MLOps reco
 - 2024-04-17 | feat: support top-k retrieval examples in command docs
 - 2024-04-18 | fix: handle recommendation counts smaller than requested top-k
 - 2024-04-19 | test: cover zero-length and low-cardinality playlist edge cases
+- 2024-04-20 | ops: standardize artifact naming across training and serving
