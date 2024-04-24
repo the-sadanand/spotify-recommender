@@ -115,3 +115,4 @@ This repository captures the delivery timeline for a production-style MLOps reco
 - 2024-04-21 | feat: add challenge-ready project overview to README
 - 2024-04-22 | fix: correct inference fallback if model load fails
 - 2024-04-23 | refactor: decouple artifact loading from runtime dependencies
+- 2024-04-24 | ci: document handoff from training to API deployment
