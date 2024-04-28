@@ -119,3 +119,4 @@ This repository captures the delivery timeline for a production-style MLOps reco
 - 2024-04-25 | ops: checkpoint model lifecycle for reproducibility
 - 2024-04-26 | build: add dependency management for PyTorch and scientific stack
 - 2024-04-27 | feat: include FAISS and NumPy requirements in runtime image
+- 2024-04-28 | fix: align version pins between local and container environments
