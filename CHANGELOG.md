@@ -121,3 +121,4 @@ This repository captures the delivery timeline for a production-style MLOps reco
 - 2024-04-27 | feat: include FAISS and NumPy requirements in runtime image
 - 2024-04-28 | fix: align version pins between local and container environments
 - 2024-04-29 | perf: tune GPU detection to avoid unnecessary CPU fallback
+- 2024-04-30 | docs: record local training commands and MLflow server setup
