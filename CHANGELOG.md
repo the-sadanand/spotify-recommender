@@ -122,3 +122,4 @@ This repository captures the delivery timeline for a production-style MLOps reco
 - 2024-04-28 | fix: align version pins between local and container environments
 - 2024-04-29 | perf: tune GPU detection to avoid unnecessary CPU fallback
 - 2024-04-30 | docs: record local training commands and MLflow server setup
+- 2024-05-01 | ops: add runbook for troubleshooting Redis connectivity
