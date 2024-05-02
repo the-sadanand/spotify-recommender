@@ -123,3 +123,4 @@ This repository captures the delivery timeline for a production-style MLOps reco
 - 2024-04-29 | perf: tune GPU detection to avoid unnecessary CPU fallback
 - 2024-04-30 | docs: record local training commands and MLflow server setup
 - 2024-05-01 | ops: add runbook for troubleshooting Redis connectivity
+- 2024-05-02 | feat: enable model serving behind uvicorn in container runtime
