@@ -126,3 +126,4 @@ This repository captures the delivery timeline for a production-style MLOps reco
 - 2024-05-02 | feat: enable model serving behind uvicorn in container runtime
 - 2024-05-03 | fix: narrow exception handling around drift diagnostics
 - 2024-05-04 | docs: define expected metrics for model latency and cache efficiency
+- 2024-05-05 | ops: establish alerting criteria for drift threshold breaches
