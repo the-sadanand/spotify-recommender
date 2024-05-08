@@ -129,3 +129,4 @@ This repository captures the delivery timeline for a production-style MLOps reco
 - 2024-05-05 | ops: establish alerting criteria for drift threshold breaches
 - 2024-05-06 | feat: add artifact validation before recommendation serving
 - 2024-05-07 | fix: ensure pipeline fails fast when no triples are generated
+- 2024-05-08 | refactor: isolate startup state into dedicated AppState
