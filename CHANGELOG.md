@@ -132,3 +132,4 @@ This repository captures the delivery timeline for a production-style MLOps reco
 - 2024-05-08 | refactor: isolate startup state into dedicated AppState
 - 2024-05-09 | perf: serialize cached embeddings as compact float32 arrays
 - 2024-05-10 | feat: add low-latency embedding retrieval from Redis
+- 2024-05-11 | docs: capture MLOps decisions in project narrative
