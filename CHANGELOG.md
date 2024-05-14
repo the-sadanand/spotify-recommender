@@ -135,3 +135,4 @@ This repository captures the delivery timeline for a production-style MLOps reco
 - 2024-05-11 | docs: capture MLOps decisions in project narrative
 - 2024-05-12 | chore: review training stability and update default hyperparameters
 - 2024-05-13 | ops: document deployment sequence for docker compose services
+- 2024-05-14 | feat: add curated submission metadata for evaluation pipeline
