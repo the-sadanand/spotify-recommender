@@ -137,3 +137,4 @@ This repository captures the delivery timeline for a production-style MLOps reco
 - 2024-05-13 | ops: document deployment sequence for docker compose services
 - 2024-05-14 | feat: add curated submission metadata for evaluation pipeline
 - 2024-05-15 | fix: protect config parsing from missing environment variables
+- 2024-05-16 | build: validate compose stack after dependency upgrades
