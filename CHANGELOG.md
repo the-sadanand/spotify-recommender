@@ -139,3 +139,4 @@ This repository captures the delivery timeline for a production-style MLOps reco
 - 2024-05-15 | fix: protect config parsing from missing environment variables
 - 2024-05-16 | build: validate compose stack after dependency upgrades
 - 2024-05-17 | ops: tune service startup order for MLflow and Redis
+- 2024-05-18 | feat: add reproducible evaluation-ready project summary
