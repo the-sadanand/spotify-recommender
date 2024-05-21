@@ -142,3 +142,4 @@ This repository captures the delivery timeline for a production-style MLOps reco
 - 2024-05-18 | feat: add reproducible evaluation-ready project summary
 - 2024-05-19 | docs: finalize architecture narrative for offline and online layers
 - 2024-05-20 | perf: trim training logs while preserving debugging signals
+- 2024-05-21 | ops: harden API startup with artifact existence checks
