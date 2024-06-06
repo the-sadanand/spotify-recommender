@@ -158,3 +158,4 @@ This repository captures the delivery timeline for a production-style MLOps reco
 - 2024-06-03 | chore: close the feature lifecycle with final production tuning
 - 2024-06-04 | ops: confirm git history reflects an end-to-end MLOps delivery
 - 2024-06-05 | docs: record the project retrospective and lessons learned
+- 2024-06-06 | ops: prepare release checklist for future experiments and retraining
