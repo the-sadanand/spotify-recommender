@@ -162,3 +162,4 @@ This repository captures the delivery timeline for a production-style MLOps reco
 - 2024-06-07 | feat: add handoff notes for next model iteration cycle
 - 2024-06-08 | refactor: prune dead code and normalize project conventions
 - 2024-06-09 | test: verify the project remains runnable with synthetic data
+- 2024-06-10 | build: refresh environment assumptions for local and CI execution
