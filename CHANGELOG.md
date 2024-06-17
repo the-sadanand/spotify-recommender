@@ -169,3 +169,4 @@ This repository captures the delivery timeline for a production-style MLOps reco
 - 2024-06-14 | docs: add deployment and rollback considerations to the ops guide
 - 2024-06-15 | ci: validate local workflow against expected artifact outputs
 - 2024-06-16 | ops: prepare the stack for scheduled retraining and drift review
+- 2024-06-17 | feat: finalize MLOps runbook for online serving and monitoring
