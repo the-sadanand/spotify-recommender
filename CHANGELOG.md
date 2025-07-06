@@ -186,3 +186,4 @@ This repository captures the delivery timeline for a production-style MLOps reco
 - 2025-07-03 | docs: add runbook for retraining decision points and thresholds
 - 2025-07-04 | ops: tune scheduled retraining cadence for stable recommendation quality
 - 2025-07-05 | ci: add artifact validation stage before model promotion
+- 2025-07-06 | docs: capture incident response flow for drift alerts
