@@ -189,3 +189,4 @@ This repository captures the delivery timeline for a production-style MLOps reco
 - 2025-07-06 | docs: capture incident response flow for drift alerts
 - 2025-07-07 | feat: add support for more robust recommendation fallback logic
 - 2025-07-08 | fix: guard against malformed Redis payloads and stale cache entries
+- 2025-07-09 | perf: reduce median latency in similarity scoring path
