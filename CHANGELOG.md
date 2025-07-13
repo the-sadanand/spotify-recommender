@@ -193,3 +193,4 @@ This repository captures the delivery timeline for a production-style MLOps reco
 - 2025-07-10 | test: validate warm-cache and cold-cache serving behavior
 - 2025-07-11 | ops: document release gates for model and API changes
 - 2025-07-12 | ci: review training and serving parity before deployment
+- 2025-07-13 | security: tighten container runtime defaults and dependency audit
