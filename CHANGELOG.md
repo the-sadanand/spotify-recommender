@@ -195,3 +195,4 @@ This repository captures the delivery timeline for a production-style MLOps reco
 - 2025-07-12 | ci: review training and serving parity before deployment
 - 2025-07-13 | security: tighten container runtime defaults and dependency audit
 - 2025-07-14 | feat: add model quality checkpoint notes to the ops guide
+- 2025-07-15 | docs: summarize release candidates and rollback scenarios
