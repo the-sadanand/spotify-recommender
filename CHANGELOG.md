@@ -197,3 +197,4 @@ This repository captures the delivery timeline for a production-style MLOps reco
 - 2025-07-14 | feat: add model quality checkpoint notes to the ops guide
 - 2025-07-15 | docs: summarize release candidates and rollback scenarios
 - 2025-07-16 | perf: reduce startup churn by lazy-loading noncritical components
+- 2025-07-17 | ops: align final monitoring dashboards with real production metrics
