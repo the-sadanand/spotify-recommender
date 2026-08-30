@@ -1,0 +1,4 @@
+{
+  "test_playlist_id": 0,
+  "mlflow_server_url": "http://localhost:5001"
+}

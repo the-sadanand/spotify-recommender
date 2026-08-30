@@ -1,0 +1,89 @@
+version: "3.9"
+
+networks:
+  recommender-net:
+    driver: bridge
+
+volumes:
+  mlflow_data:
+  redis_data:
+
+services:
+  # ── Redis Feature Cache ─────────────────────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: recommender-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - recommender-net
+    command: redis-server --appendonly yes --maxmemory 512mb --maxmemory-policy allkeys-lru
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  # ── MLflow Tracking Server ──────────────────────────────────────────────────
+  mlflow:
+    image: python:3.11-slim
+    container_name: recommender-mlflow
+    restart: unless-stopped
+    ports:
+      - "5001:5001"
+    volumes:
+      - mlflow_data:/mlflow
+    networks:
+      - recommender-net
+    environment:
+      - MLFLOW_BACKEND_STORE_URI=sqlite:///mlflow/mlflow.db
+    command: >
+      sh -c "pip install --quiet mlflow==2.13.2 &&
+             mlflow server
+               --backend-store-uri sqlite:///mlflow/mlflow.db
+               --default-artifact-root /mlflow/artifacts
+               --host 0.0.0.0
+               --port 5001"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:5001/health')"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 60s
+
+  # ── FastAPI Recommender API ─────────────────────────────────────────────────
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: recommender-api
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./artifacts:/app/artifacts:ro
+    networks:
+      - recommender-net
+    environment:
+      - MLFLOW_TRACKING_URI=http://mlflow:5001
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - EMBEDDING_CACHE_TTL_SECONDS=3600
+      - ARTIFACTS_DIR=/app/artifacts
+      - DRIFT_KL_THRESHOLD=0.5
+      - DRIFT_WINDOW=100
+    depends_on:
+      redis:
+        condition: service_healthy
+      mlflow:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 40s
