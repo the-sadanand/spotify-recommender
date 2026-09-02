@@ -31,7 +31,7 @@ services:
     ports:
       - "5001:5000"
     volumes:
-      - mlflow_data:/mlflow
+      - ./mlflow:/mlflow
     networks:
       - recommender-net
     command:
@@ -67,6 +67,7 @@ services:
     ports:
       - "8000:8000"
     volumes:
+      - ./mlflow:/mlflow
       - ./artifacts:/app/artifacts
     networks:
       - recommender-net
