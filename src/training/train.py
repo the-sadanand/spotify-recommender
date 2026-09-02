@@ -5,7 +5,7 @@ Usage:
     python src/training/train.py
 
 Environment variables:
-    MLFLOW_TRACKING_URI  - MLflow server URL (default: http://localhost:5001)
+    MLFLOW_TRACKING_URI  - MLflow server URL (default: http://localhost:5000)
     DATA_DIR             - path to Spotify MPD JSON files (default: data/)
     ARTIFACTS_DIR        - where to save track_embeddings.npy etc. (default: artifacts/)
     MAX_PLAYLISTS        - number of playlists to use (default: 1000)
@@ -47,7 +47,7 @@ from src.training.preprocess import (
 # ─── hyper-parameters / config ────────────────────────────────────────────────
 DATA_DIR        = os.getenv("DATA_DIR",           "data/")
 ARTIFACTS_DIR   = os.getenv("ARTIFACTS_DIR",      "artifacts/")
-MLFLOW_URI      = os.getenv("MLFLOW_TRACKING_URI","http://localhost:5001")
+MLFLOW_URI      = os.getenv("MLFLOW_TRACKING_URI","http://localhost:5000")
 MAX_PLAYLISTS   = int(os.getenv("MAX_PLAYLISTS",  "1000"))
 EMBEDDING_DIM   = int(os.getenv("EMBEDDING_DIM",  "64"))
 OUTPUT_DIM      = int(os.getenv("OUTPUT_DIM",     "64"))

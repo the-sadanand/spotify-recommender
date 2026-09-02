@@ -10,7 +10,7 @@
 
 set -euo pipefail
 
-export MLFLOW_TRACKING_URI="${MLFLOW_TRACKING_URI:-http://localhost:5001}"
+export MLFLOW_TRACKING_URI="${MLFLOW_TRACKING_URI:-http://localhost:5000}"
 export DATA_DIR="${DATA_DIR:-data}"
 export ARTIFACTS_DIR="${ARTIFACTS_DIR:-artifacts}"
 export MAX_PLAYLISTS="${MAX_PLAYLISTS:-1000}"
