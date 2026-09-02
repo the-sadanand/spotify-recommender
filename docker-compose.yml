@@ -34,16 +34,26 @@ services:
       - mlflow_data:/mlflow
     networks:
       - recommender-net
-    command: >
-      sh -c "mkdir -p /mlflow/artifacts &&
-            mlflow server
-            --backend-store-uri sqlite:////mlflow/mlflow.db
-            --default-artifact-root /mlflow/artifacts
-            --host 0.0.0.0
-            --port 5000
-            --serve-artifacts"
+    command:
+      - mlflow
+      - server
+      - --backend-store-uri
+      - sqlite:////mlflow/mlflow.db
+      - --default-artifact-root
+      - /mlflow/artifacts
+      - --host
+      - 0.0.0.0
+      - --port
+      - "5000"
+      - --serve-artifacts
     healthcheck:
-      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:5000/health').read()"]
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://localhost:5000/health').read()"
+        ]
       interval: 15s
       timeout: 20s
       retries: 20
@@ -57,7 +67,7 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      - ./artifacts:/app/artifacts:ro
+      - ./artifacts:/app/artifacts
     networks:
       - recommender-net
     environment:
