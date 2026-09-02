@@ -38,7 +38,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from src.model.two_tower import TwoTowerModel
 
 # ─── Configuration ────────────────────────────────────────────────────────────
-MLFLOW_URI        = os.getenv("MLFLOW_TRACKING_URI",      "http://mlflow:5001")
+MLFLOW_URI        = os.getenv("MLFLOW_TRACKING_URI",      "http://mlflow:5000")
 REDIS_HOST        = os.getenv("REDIS_HOST",               "redis")
 REDIS_PORT        = int(os.getenv("REDIS_PORT",           "6379"))
 CACHE_TTL         = int(os.getenv("EMBEDDING_CACHE_TTL_SECONDS", "3600"))
@@ -111,13 +111,10 @@ async def lifespan(app: FastAPI):
         state.model.eval()
         logger.info(f"Loaded model from MLflow run {run_id}")
     except Exception as e:
-        logger.warning(f"Could not load from MLflow ({e}). Rebuilding model from scratch.")
-        state.model = TwoTowerModel(
-            num_tracks=state.num_tracks,
-            embed_dim=64,
-            output_dim=state.track_embeddings.shape[1],
-        ).to(DEVICE)
-        state.model.eval()
+        logger.exception("Failed to load model from MLflow")
+        raise RuntimeError(
+            f"Could not load model from MLflow: {e}"
+        ) from e
 
     # 5. Redis
     state.redis_client = redis.Redis(
@@ -277,4 +274,28 @@ def metrics():
 
 @app.get("/health")
 def health():
-    return {"status": "ok"}
+    if state.model is None:
+        raise HTTPException(
+            status_code=503,
+            detail="Model not loaded"
+        )
+
+    if state.redis_client is None:
+        raise HTTPException(
+            status_code=503,
+            detail="Redis not initialized"
+        )
+
+    try:
+        state.redis_client.ping()
+    except Exception:
+        raise HTTPException(
+            status_code=503,
+            detail="Redis unavailable"
+        )
+
+    return {
+        "status": "ok",
+        "model_loaded": True,
+        "redis_connected": True,
+    }
