@@ -153,7 +153,7 @@ This starts:
 |---|---|---|
 | `recommender-api` | 8000 | FastAPI recommender |
 | `recommender-redis` | 6379 | Redis feature cache |
-| `recommender-mlflow` | 5001 | MLflow tracking UI |
+http://localhost:5001
 
 Wait ~30 seconds for MLflow to initialize, then check:
 
@@ -174,7 +174,7 @@ docker-compose up -d redis mlflow
 
 # Wait for MLflow to be healthy, then run training
 docker-compose run --rm \
-  -e MLFLOW_TRACKING_URI=http://mlflow:5001 \
+  -e MLFLOW_TRACKING_URI=http://mlflow:5000 \
   -e DATA_DIR=/app/data \
   -e ARTIFACTS_DIR=/app/artifacts \
   -v $(pwd)/data:/app/data \
