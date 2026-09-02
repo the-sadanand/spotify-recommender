@@ -33,7 +33,7 @@ COPY src/       ./src/
 COPY artifacts/ ./artifacts/
 
 # Default environment — overridden by docker-compose
-ENV MLFLOW_TRACKING_URI=http://mlflow:5001 \
+ENV MLFLOW_TRACKING_URI=http://mlflow:5000 \
     REDIS_HOST=redis \
     REDIS_PORT=6379 \
     EMBEDDING_CACHE_TTL_SECONDS=3600 \

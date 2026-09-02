@@ -7,7 +7,6 @@ volumes:
   redis_data:
 
 services:
-  # ── Redis Feature Cache ─────────────────────────────────────────────────────
   redis:
     image: redis:7-alpine
     container_name: recommender-redis
@@ -25,35 +24,30 @@ services:
       timeout: 5s
       retries: 5
       start_period: 10s
-
-  # ── MLflow Tracking Server ──────────────────────────────────────────────────
   mlflow:
     image: ghcr.io/mlflow/mlflow:v2.13.2
     container_name: recommender-mlflow
     restart: unless-stopped
     ports:
-      - "5001:5001"
+      - "5001:5000"
     volumes:
       - mlflow_data:/mlflow
     networks:
       - recommender-net
-    environment:
-      - MLFLOW_BACKEND_STORE_URI=sqlite:////mlflow/mlflow.db
     command: >
       sh -c "mkdir -p /mlflow/artifacts &&
-             mlflow server
-               --backend-store-uri sqlite:////mlflow/mlflow.db
-               --default-artifact-root file:///mlflow/artifacts
-               --host 0.0.0.0
-               --port 5001"
+            mlflow server
+            --backend-store-uri sqlite:////mlflow/mlflow.db
+            --default-artifact-root /mlflow/artifacts
+            --host 0.0.0.0
+            --port 5000
+            --serve-artifacts"
     healthcheck:
-      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:5001/health').read()"]
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:5000/health').read()"]
       interval: 15s
       timeout: 20s
       retries: 20
       start_period: 90s
-
-  # ── FastAPI Recommender API ─────────────────────────────────────────────────
   api:
     build:
       context: .
@@ -67,7 +61,7 @@ services:
     networks:
       - recommender-net
     environment:
-      - MLFLOW_TRACKING_URI=http://mlflow:5001
+      - MLFLOW_TRACKING_URI=http://mlflow:5000
       - REDIS_HOST=redis
       - REDIS_PORT=6379
       - EMBEDDING_CACHE_TTL_SECONDS=3600
