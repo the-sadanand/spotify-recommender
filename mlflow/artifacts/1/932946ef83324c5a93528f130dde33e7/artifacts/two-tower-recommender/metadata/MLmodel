@@ -1,0 +1,21 @@
+artifact_path: two-tower-recommender
+flavors:
+  python_function:
+    config:
+      device: null
+    data: data
+    env:
+      conda: conda.yaml
+      virtualenv: python_env.yaml
+    loader_module: mlflow.pytorch
+    pickle_module_name: mlflow.pytorch.pickle_module
+    python_version: 3.11.16
+  pytorch:
+    code: null
+    model_data: data
+    pytorch_version: 2.3.1+cu121
+mlflow_version: 2.13.2
+model_size_bytes: 2629752
+model_uuid: 87ecd5de5c8f4ca9aa7e6623c576ddc2
+run_id: 932946ef83324c5a93528f130dde33e7
+utc_time_created: '2026-09-02 12:30:43.987092'
