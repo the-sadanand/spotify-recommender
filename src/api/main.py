@@ -20,7 +20,7 @@ from typing import Optional
 import mlflow.pytorch
 import numpy as np
 import faiss
-import redis
+import redis.asyncio as redis
 import torch
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import PlainTextResponse
@@ -134,12 +134,14 @@ async def lifespan(app: FastAPI):
         host=REDIS_HOST, port=REDIS_PORT, db=0, decode_responses=False
     )
     try:
-        state.redis_client.ping()
+        await state.redis_client.ping()
         logger.info("Redis connection OK")
     except Exception as e:
         logger.error(f"Redis connection failed: {e}")
 
     yield
+    if state.redis_client is not None:
+        await state.redis_client.aclose()
     logger.info("Shutting down.")
 
 
@@ -165,10 +167,10 @@ class RecommendResponse(BaseModel):
 CACHE_KEY_PREFIX = "playlist_embedding:"
 
 
-def _get_playlist_embedding(playlist_id: int) -> tuple[np.ndarray, bool]:
+async def _get_playlist_embedding(playlist_id: int) -> tuple[np.ndarray, bool]:
     """Retrieve playlist embedding — from cache or computed fresh."""
     cache_key = f"{CACHE_KEY_PREFIX}{playlist_id}"
-    redis_val = state.redis_client.get(cache_key)
+    redis_val = await state.redis_client.get(cache_key)
 
     if redis_val is not None:
         CACHE_HITS.inc()
@@ -195,7 +197,7 @@ def _get_playlist_embedding(playlist_id: int) -> tuple[np.ndarray, bool]:
     emb = emb_tensor.cpu().numpy().squeeze().astype(np.float32)
 
     # Store in Redis with TTL
-    state.redis_client.setex(cache_key, CACHE_TTL, emb.tobytes())
+    await state.redis_client.setex(cache_key, CACHE_TTL, emb.tobytes())
     return emb, False
 
 
@@ -253,13 +255,13 @@ def _check_drift(embedding: np.ndarray):
 
 # ─── Endpoints ────────────────────────────────────────────────────────────────
 @app.post("/recommend", response_model=RecommendResponse)
-def recommend(req: RecommendRequest):
+async def recommend(req: RecommendRequest):
     start = time.perf_counter()
 
     if req.playlist_id not in state.playlist_track_map:
         raise HTTPException(status_code=404, detail="Playlist not found")
 
-    playlist_emb, from_cache = _get_playlist_embedding(req.playlist_id)
+    playlist_emb, from_cache = await _get_playlist_embedding(req.playlist_id)
     top_indices = _find_top_k(playlist_emb, req.top_k)
 
     # Drift detection (async-style: don't block response)
@@ -286,7 +288,7 @@ def metrics():
 
 
 @app.get("/health")
-def health():
+async def health():
     if state.model is None:
         raise HTTPException(
             status_code=503,
@@ -300,7 +302,7 @@ def health():
         )
 
     try:
-        state.redis_client.ping()
+        await state.redis_client.ping()
     except Exception:
         raise HTTPException(
             status_code=503,
