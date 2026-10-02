@@ -8,44 +8,41 @@ import os
 import random
 from pathlib import Path
 from collections import defaultdict
-from typing import Dict, List, Tuple
+from typing import Dict, Iterator, List, Tuple
 
 import numpy as np
 
 
-def load_playlists(data_dir: str, max_playlists: int = 1000) -> List[dict]:
+def load_playlists(data_dir: str, max_playlists: int = 1000) -> Iterator[dict]:
     """Load playlists from the Spotify MPD JSON files."""
     data_path = Path(data_dir)
-    playlists = []
-
     json_files = sorted(data_path.glob("*.json"))
     if not json_files:
-        # Generate synthetic data for testing/demo purposes
         print(f"[WARNING] No JSON files found in {data_dir}. Generating synthetic data for demo.")
-        return _generate_synthetic_data(max_playlists)
+        yield from _generate_synthetic_data(max_playlists)
+        return
 
+    loaded = 0
     for json_file in json_files:
         with open(json_file, "r") as f:
             data = json.load(f)
         for playlist in data.get("playlists", []):
-            playlists.append(playlist)
-            if len(playlists) >= max_playlists:
-                break
-        if len(playlists) >= max_playlists:
-            break
+            yield playlist
+            loaded += 1
+            if loaded >= max_playlists:
+                return
 
-    print(f"Loaded {len(playlists)} playlists from {data_dir}")
-    return playlists
+    print(f"Streamed {loaded} playlists from {data_dir}")
 
 
 def _generate_synthetic_data(num_playlists: int = 1000) -> List[dict]:
     """Generate synthetic playlist data for demo/testing."""
     num_tracks = 5000
-    playlists = []
+    rng = random.Random(42)
     for pid in range(num_playlists):
-        playlist_len = random.randint(5, 30)
+        playlist_len = rng.randint(5, 30)
         tracks = []
-        track_ids = random.sample(range(num_tracks), min(playlist_len, num_tracks))
+        track_ids = rng.sample(range(num_tracks), min(playlist_len, num_tracks))
         for tid in track_ids:
             tracks.append({
                 "track_uri": f"spotify:track:synth_{tid:06d}",
@@ -101,25 +98,26 @@ def generate_training_pairs(
     playlist_track_map: Dict[int, List[int]],
     num_tracks: int,
     num_negatives: int = 4,
-) -> List[Tuple[List[int], int, int]]:
-    """
-    Generate (playlist_tracks, positive_track_id, negative_track_id) triples.
-    Uses in-batch negative sampling.
-    """
+    split: str = "train",
+    val_mod: int = 10,
+) -> Iterator[Tuple[List[int], int, int]]:
+    """Stream training triples without materializing the complete dataset."""
+    if split not in {"train", "val"}:
+        raise ValueError("split must be 'train' or 'val'")
+
     all_track_ids = list(range(num_tracks))
-    pairs = []
 
     for pid, track_ids in playlist_track_map.items():
-        if len(track_ids) < 2:
+        is_val = pid % val_mod == 0
+        if (split == "val") != is_val or len(track_ids) < 2:
             continue
-        # For each track in the playlist as positive, sample negatives
+
+        playlist_set = set(track_ids)
         for pos_track in track_ids:
-            # Context: all tracks except the positive one
             context = [t for t in track_ids if t != pos_track]
             if not context:
                 continue
-            # Sample negatives not in the playlist
-            playlist_set = set(track_ids)
+
             negatives = []
             attempts = 0
             while len(negatives) < num_negatives and attempts < 100:
@@ -127,12 +125,9 @@ def generate_training_pairs(
                 if neg not in playlist_set:
                     negatives.append(neg)
                 attempts += 1
-            for neg in negatives:
-                pairs.append((context[:20], pos_track, neg))  # cap context length
 
-    random.shuffle(pairs)
-    print(f"Generated {len(pairs)} training triples")
-    return pairs
+            for neg in negatives:
+                yield (context[:20], pos_track, neg)
 
 
 def save_vocab(track2idx: Dict, playlist_track_map: Dict, artifacts_dir: str):
