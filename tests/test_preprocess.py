@@ -1,3 +1,5 @@
+import pytest
+
 from src.training.preprocess import generate_training_pairs, load_playlists
 
 
@@ -20,5 +22,14 @@ def test_train_and_validation_playlists_do_not_overlap():
     train = list(generate_training_pairs(playlist_map, 10, 1, split="train"))
     val = list(generate_training_pairs(playlist_map, 10, 1, split="val"))
 
+    train_pos = {pos for _, pos, _ in train}
+    val_pos = {pos for _, pos, _ in val}
+
     assert train
     assert val
+    assert train_pos.isdisjoint(val_pos)
+
+
+def test_invalid_split_is_rejected():
+    with pytest.raises(ValueError, match="split must be 'train' or 'val'"):
+        list(generate_training_pairs({0: [0, 1]}, 5, split="test"))
