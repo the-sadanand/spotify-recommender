@@ -36,7 +36,7 @@ A production-grade MLOps pipeline for a song recommender system built with:
 │       │                              │                       │
 │       ├─► Playlist Tower ────────────┘                       │
 │       │                                                      │
-│       ├─► FAISS/NumPy ANN search over track_embeddings.npy  │
+│       ├─► FAISS HNSW ANN search over track_embeddings.npy  │
 │       │                                                      │
 │       ├─► Drift Detector (KL divergence every 100 requests) │
 │       │                                                      │
@@ -102,7 +102,7 @@ data/
   ...
 ```
 
-The training script will automatically use only the first `MAX_PLAYLISTS` playlists (default: 1000) for fast iteration.
+The training pipeline streams playlists from the JSON files and generates training triples lazily, while using only the first `MAX_PLAYLISTS` playlists (default: 1000) for fast iteration.
 
 ### Option B: Synthetic Data (for demo / testing)
 
@@ -122,6 +122,10 @@ pip install -r requirements.txt
 mlflow server --backend-store-uri sqlite:///mlflow.db \
               --default-artifact-root ./mlflow_artifacts \
               --host 0.0.0.0 --port 5001 &
+
+export MLFLOW_TRACKING_URI=http://localhost:5001
+# Optional: choose a reproducible training seed
+export SEED=42
 
 # Run training
 bash scripts/run_training.sh
@@ -277,7 +281,7 @@ All settings are controlled via environment variables (set in `docker-compose.ym
 
 | Variable | Default | Description |
 |---|---|---|
-| `MLFLOW_TRACKING_URI` | `http://mlflow:5001` | MLflow server URL |
+| `MLFLOW_TRACKING_URI` | required for training; `http://mlflow:5000` in Docker Compose | MLflow server URL |
 | `REDIS_HOST` | `redis` | Redis hostname |
 | `REDIS_PORT` | `6379` | Redis port |
 | `EMBEDDING_CACHE_TTL_SECONDS` | `3600` | Cache TTL (seconds) |
@@ -290,6 +294,7 @@ All settings are controlled via environment variables (set in `docker-compose.ym
 | `NUM_EPOCHS` | `10` | Training epochs |
 | `LEARNING_RATE` | `1e-3` | Adam learning rate |
 | `BATCH_SIZE` | `256` | Training batch size |
+| `SEED` | `42` | Random seed for reproducible training |
 
 ---
 
@@ -305,7 +310,7 @@ docker-compose down -v       # stop and delete volumes (fresh start)
 ## Troubleshooting
 
 **API can't connect to Redis/MLflow:**
-> Inside Docker, services talk by service name. Check that `REDIS_HOST=redis` and `MLFLOW_TRACKING_URI=http://mlflow:5001` are set.
+> Inside Docker, services talk by service name. Check that `REDIS_HOST=redis` and `MLFLOW_TRACKING_URI=http://mlflow:5000` are set.
 
 **`artifacts/` directory is empty after docker-compose up:**
 > You must run training before starting the API. See Step 2 or Step 4.

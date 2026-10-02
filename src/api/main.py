@@ -19,10 +19,12 @@ from typing import Optional
 
 import mlflow.pytorch
 import numpy as np
-import redis
+import faiss
+import redis.asyncio as redis
 import torch
-from fastapi import FastAPI, HTTPException
+from fastapi import BackgroundTasks, FastAPI, HTTPException
 from fastapi.responses import PlainTextResponse
+from starlette.concurrency import run_in_threadpool
 from prometheus_client import (
     Counter,
     Gauge,
@@ -71,6 +73,7 @@ class AppState:
     redis_client:       Optional[redis.Redis]   = None
     recent_embeddings:  deque                   = deque(maxlen=DRIFT_WINDOW)
     num_tracks:         int                     = 0
+    track_index:        Optional[faiss.Index]  = None
 
 
 state = AppState()
@@ -83,9 +86,20 @@ async def lifespan(app: FastAPI):
 
     # 1. Track embeddings
     emb_path = os.path.join(ARTIFACTS_DIR, "track_embeddings.npy")
-    state.track_embeddings = np.load(emb_path)
+    state.track_embeddings = np.load(emb_path).astype(np.float32, copy=False)
     state.num_tracks = len(state.track_embeddings)
-    logger.info(f"Loaded track embeddings: shape={state.track_embeddings.shape}")
+
+    # Track embeddings are L2-normalized by the model, so HNSW L2 search
+    # preserves cosine-similarity ranking while providing ANN retrieval.
+    state.track_index = faiss.IndexHNSWFlat(
+        state.track_embeddings.shape[1], 32
+    )
+    state.track_index.hnsw.efSearch = 64
+    state.track_index.add(state.track_embeddings)
+    logger.info(
+        f"Loaded track embeddings: shape={state.track_embeddings.shape}, "
+        f"FAISS index={state.track_index.ntotal}"
+    )
 
     # 2. Baseline distribution
     dist_path = os.path.join(ARTIFACTS_DIR, "training_track_distribution.pkl")
@@ -109,6 +123,7 @@ async def lifespan(app: FastAPI):
         model_uri = f"runs:/{run_id}/two-tower-recommender"
         state.model = mlflow.pytorch.load_model(model_uri, map_location=DEVICE)
         state.model.eval()
+        torch.set_num_threads(1)
         logger.info(f"Loaded model from MLflow run {run_id}")
     except Exception as e:
         logger.exception("Failed to load model from MLflow")
@@ -121,12 +136,14 @@ async def lifespan(app: FastAPI):
         host=REDIS_HOST, port=REDIS_PORT, db=0, decode_responses=False
     )
     try:
-        state.redis_client.ping()
+        await state.redis_client.ping()
         logger.info("Redis connection OK")
     except Exception as e:
         logger.error(f"Redis connection failed: {e}")
 
     yield
+    if state.redis_client is not None:
+        await state.redis_client.aclose()
     logger.info("Shutting down.")
 
 
@@ -152,49 +169,48 @@ class RecommendResponse(BaseModel):
 CACHE_KEY_PREFIX = "playlist_embedding:"
 
 
-def _get_playlist_embedding(playlist_id: int) -> tuple[np.ndarray, bool]:
-    """Retrieve playlist embedding — from cache or computed fresh."""
-    cache_key = f"{CACHE_KEY_PREFIX}{playlist_id}"
-    redis_val = state.redis_client.get(cache_key)
-
-    if redis_val is not None:
-        CACHE_HITS.inc()
-        emb = np.frombuffer(redis_val, dtype=np.float32)
-        return emb, True
-
-    CACHE_MISSES.inc()
-
-    # Compute embedding via playlist tower
+def _compute_playlist_embedding(playlist_id: int) -> np.ndarray:
+    """Compute a playlist embedding without performing I/O."""
     track_ids_raw = state.playlist_track_map.get(playlist_id)
     if not track_ids_raw:
         raise HTTPException(status_code=404, detail="Playlist not found")
 
-    # Shift IDs by +1 (same as training), cap at max_context=20
     context = [t + 1 for t in track_ids_raw[:20]]
-    length  = len(context)
-    padded  = context + [0] * (20 - length)
+    length = len(context)
+    padded = context + [0] * (20 - length)
 
     pt = torch.tensor([padded], dtype=torch.long).to(DEVICE)
     pl = torch.tensor([length], dtype=torch.long).to(DEVICE)
 
     with torch.no_grad():
-        emb_tensor = state.model.encode_playlist(pt, pl)  # (1, output_dim)
-    emb = emb_tensor.cpu().numpy().squeeze().astype(np.float32)
+        emb_tensor = state.model.encode_playlist(pt, pl)
+    return emb_tensor.cpu().numpy().squeeze().astype(np.float32)
 
-    # Store in Redis with TTL
-    state.redis_client.setex(cache_key, CACHE_TTL, emb.tobytes())
+
+async def _get_playlist_embedding(playlist_id: int) -> tuple[np.ndarray, bool]:
+    """Retrieve playlist embedding from Redis or compute it in a worker thread."""
+    cache_key = f"{CACHE_KEY_PREFIX}{playlist_id}"
+    redis_val = await state.redis_client.get(cache_key)
+
+    if redis_val is not None:
+        CACHE_HITS.inc()
+        return np.frombuffer(redis_val, dtype=np.float32), True
+
+    CACHE_MISSES.inc()
+    emb = await run_in_threadpool(_compute_playlist_embedding, playlist_id)
+    await state.redis_client.setex(cache_key, CACHE_TTL, emb.tobytes())
     return emb, False
 
 
 def _find_top_k(playlist_emb: np.ndarray, top_k: int) -> list[int]:
-    """Dot-product search over all track embeddings."""
-    scores = state.track_embeddings @ playlist_emb   # (num_tracks,)
-    # Get top_k+1 to have buffer (avoid returning exact same track)
-    k = min(top_k, len(scores))
-    top_indices = np.argpartition(scores, -k)[-k:]
-    top_indices = top_indices[np.argsort(scores[top_indices])[::-1]]
-    # Track indices are 0-based in embedding array, map back to raw IDs
-    return top_indices.tolist()
+    """Retrieve top-K tracks with the FAISS HNSW ANN index."""
+    if top_k <= 0 or state.track_index is None:
+        return []
+
+    k = min(top_k, state.num_tracks)
+    query = np.asarray(playlist_emb, dtype=np.float32).reshape(1, -1)
+    _, indices = state.track_index.search(query, k)
+    return indices[0].tolist()
 
 
 def _check_drift(embedding: np.ndarray):
@@ -240,20 +256,17 @@ def _check_drift(embedding: np.ndarray):
 
 # ─── Endpoints ────────────────────────────────────────────────────────────────
 @app.post("/recommend", response_model=RecommendResponse)
-def recommend(req: RecommendRequest):
+async def recommend(req: RecommendRequest, background_tasks: BackgroundTasks):
     start = time.perf_counter()
 
     if req.playlist_id not in state.playlist_track_map:
         raise HTTPException(status_code=404, detail="Playlist not found")
 
-    playlist_emb, from_cache = _get_playlist_embedding(req.playlist_id)
-    top_indices = _find_top_k(playlist_emb, req.top_k)
+    playlist_emb, from_cache = await _get_playlist_embedding(req.playlist_id)
+    top_indices = await run_in_threadpool(_find_top_k, playlist_emb, req.top_k)
 
-    # Drift detection (async-style: don't block response)
-    try:
-        _check_drift(playlist_emb)
-    except Exception as e:
-        logger.debug(f"Drift check error (non-fatal): {e}")
+    # Drift detection is non-critical and runs after the response in a worker thread.
+    background_tasks.add_task(_check_drift, playlist_emb)
 
     elapsed = time.perf_counter() - start
     LATENCY.observe(elapsed)
@@ -273,7 +286,7 @@ def metrics():
 
 
 @app.get("/health")
-def health():
+async def health():
     if state.model is None:
         raise HTTPException(
             status_code=503,
@@ -287,7 +300,7 @@ def health():
         )
 
     try:
-        state.redis_client.ping()
+        await state.redis_client.ping()
     except Exception:
         raise HTTPException(
             status_code=503,

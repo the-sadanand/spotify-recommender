@@ -10,7 +10,8 @@
 
 set -euo pipefail
 
-export MLFLOW_TRACKING_URI="${MLFLOW_TRACKING_URI:-http://localhost:5000}"
+: "${MLFLOW_TRACKING_URI:?Set MLFLOW_TRACKING_URI before training (for Docker Compose use http://mlflow:5000)}"
+export MLFLOW_TRACKING_URI
 export DATA_DIR="${DATA_DIR:-data}"
 export ARTIFACTS_DIR="${ARTIFACTS_DIR:-artifacts}"
 export MAX_PLAYLISTS="${MAX_PLAYLISTS:-1000}"
@@ -19,6 +20,7 @@ export OUTPUT_DIM="${OUTPUT_DIM:-64}"
 export LEARNING_RATE="${LEARNING_RATE:-1e-3}"
 export BATCH_SIZE="${BATCH_SIZE:-256}"
 export NUM_EPOCHS="${NUM_EPOCHS:-10}"
+export SEED="${SEED:-42}"
 
 echo "=================================================="
 echo "  Spotify Two-Tower Recommender — Training"
@@ -28,6 +30,7 @@ echo "  DATA_DIR            : $DATA_DIR"
 echo "  ARTIFACTS_DIR       : $ARTIFACTS_DIR"
 echo "  MAX_PLAYLISTS       : $MAX_PLAYLISTS"
 echo "  NUM_EPOCHS          : $NUM_EPOCHS"
+echo "  SEED                : $SEED"
 echo "=================================================="
 
 mkdir -p "$DATA_DIR" "$ARTIFACTS_DIR"
