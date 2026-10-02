@@ -36,7 +36,7 @@ A production-grade MLOps pipeline for a song recommender system built with:
 │       │                              │                       │
 │       ├─► Playlist Tower ────────────┘                       │
 │       │                                                      │
-│       ├─► FAISS/NumPy ANN search over track_embeddings.npy  │
+│       ├─► FAISS HNSW ANN search over track_embeddings.npy  │
 │       │                                                      │
 │       ├─► Drift Detector (KL divergence every 100 requests) │
 │       │                                                      │
@@ -277,7 +277,7 @@ All settings are controlled via environment variables (set in `docker-compose.ym
 
 | Variable | Default | Description |
 |---|---|---|
-| `MLFLOW_TRACKING_URI` | `http://mlflow:5001` | MLflow server URL |
+| `MLFLOW_TRACKING_URI` | required for training; `http://mlflow:5000` in Docker Compose | MLflow server URL |
 | `REDIS_HOST` | `redis` | Redis hostname |
 | `REDIS_PORT` | `6379` | Redis port |
 | `EMBEDDING_CACHE_TTL_SECONDS` | `3600` | Cache TTL (seconds) |
@@ -305,7 +305,7 @@ docker-compose down -v       # stop and delete volumes (fresh start)
 ## Troubleshooting
 
 **API can't connect to Redis/MLflow:**
-> Inside Docker, services talk by service name. Check that `REDIS_HOST=redis` and `MLFLOW_TRACKING_URI=http://mlflow:5001` are set.
+> Inside Docker, services talk by service name. Check that `REDIS_HOST=redis` and `MLFLOW_TRACKING_URI=http://mlflow:5000` are set.
 
 **`artifacts/` directory is empty after docker-compose up:**
 > You must run training before starting the API. See Step 2 or Step 4.
