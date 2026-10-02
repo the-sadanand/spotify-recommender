@@ -5,7 +5,7 @@ Usage:
     python src/training/train.py
 
 Environment variables:
-    MLFLOW_TRACKING_URI  - MLflow server URL (default: http://localhost:5000)
+    MLFLOW_TRACKING_URI  - required MLflow server URL
     DATA_DIR             - path to Spotify MPD JSON files (default: data/)
     ARTIFACTS_DIR        - where to save track_embeddings.npy etc. (default: artifacts/)
     MAX_PLAYLISTS        - number of playlists to use (default: 1000)
@@ -20,6 +20,7 @@ Environment variables:
 
 import os
 import pickle
+import random
 import sys
 from pathlib import Path
 
@@ -47,7 +48,7 @@ from src.training.preprocess import (
 # ─── hyper-parameters / config ────────────────────────────────────────────────
 DATA_DIR        = os.getenv("DATA_DIR",           "data/")
 ARTIFACTS_DIR   = os.getenv("ARTIFACTS_DIR",      "artifacts/")
-MLFLOW_URI      = os.getenv("MLFLOW_TRACKING_URI","http://localhost:5000")
+MLFLOW_URI      = os.environ["MLFLOW_TRACKING_URI"]
 MAX_PLAYLISTS   = int(os.getenv("MAX_PLAYLISTS",  "1000"))
 EMBEDDING_DIM   = int(os.getenv("EMBEDDING_DIM",  "64"))
 OUTPUT_DIM      = int(os.getenv("OUTPUT_DIM",     "64"))
@@ -56,10 +57,19 @@ BATCH_SIZE      = int(os.getenv("BATCH_SIZE",     "256"))
 NUM_EPOCHS      = int(os.getenv("NUM_EPOCHS",     "10"))
 NUM_NEGATIVES   = int(os.getenv("NUM_NEGATIVES",  "4"))
 GMM_COMPONENTS  = int(os.getenv("GMM_COMPONENTS", "8"))
+SEED            = int(os.getenv("SEED", "42"))
 DEVICE          = "cuda" if torch.cuda.is_available() else "cpu"
 
 
 def train():
+    random.seed(SEED)
+    np.random.seed(SEED)
+    torch.manual_seed(SEED)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed_all(SEED)
+        torch.backends.cudnn.deterministic = True
+        torch.backends.cudnn.benchmark = False
+
     os.makedirs(ARTIFACTS_DIR, exist_ok=True)
 
     # ── 1. Data ───────────────────────────────────────────────────────────────
@@ -122,6 +132,7 @@ def train():
         mlflow.log_param("num_playlists",   len(playlist_track_map))
         mlflow.log_param("train_samples",   train_size)
         mlflow.log_param("device",          DEVICE)
+        mlflow.log_param("seed",            SEED)
 
         best_val_loss = float("inf")
 
