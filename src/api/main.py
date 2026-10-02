@@ -22,8 +22,9 @@ import numpy as np
 import faiss
 import redis.asyncio as redis
 import torch
-from fastapi import FastAPI, HTTPException
+from fastapi import BackgroundTasks, FastAPI, HTTPException
 from fastapi.responses import PlainTextResponse
+from starlette.concurrency import run_in_threadpool
 from prometheus_client import (
     Counter,
     Gauge,
@@ -122,6 +123,7 @@ async def lifespan(app: FastAPI):
         model_uri = f"runs:/{run_id}/two-tower-recommender"
         state.model = mlflow.pytorch.load_model(model_uri, map_location=DEVICE)
         state.model.eval()
+        torch.set_num_threads(1)
         logger.info(f"Loaded model from MLflow run {run_id}")
     except Exception as e:
         logger.exception("Failed to load model from MLflow")
@@ -167,36 +169,35 @@ class RecommendResponse(BaseModel):
 CACHE_KEY_PREFIX = "playlist_embedding:"
 
 
-async def _get_playlist_embedding(playlist_id: int) -> tuple[np.ndarray, bool]:
-    """Retrieve playlist embedding — from cache or computed fresh."""
-    cache_key = f"{CACHE_KEY_PREFIX}{playlist_id}"
-    redis_val = await state.redis_client.get(cache_key)
-
-    if redis_val is not None:
-        CACHE_HITS.inc()
-        emb = np.frombuffer(redis_val, dtype=np.float32)
-        return emb, True
-
-    CACHE_MISSES.inc()
-
-    # Compute embedding via playlist tower
+def _compute_playlist_embedding(playlist_id: int) -> np.ndarray:
+    """Compute a playlist embedding without performing I/O."""
     track_ids_raw = state.playlist_track_map.get(playlist_id)
     if not track_ids_raw:
         raise HTTPException(status_code=404, detail="Playlist not found")
 
-    # Shift IDs by +1 (same as training), cap at max_context=20
     context = [t + 1 for t in track_ids_raw[:20]]
-    length  = len(context)
-    padded  = context + [0] * (20 - length)
+    length = len(context)
+    padded = context + [0] * (20 - length)
 
     pt = torch.tensor([padded], dtype=torch.long).to(DEVICE)
     pl = torch.tensor([length], dtype=torch.long).to(DEVICE)
 
     with torch.no_grad():
-        emb_tensor = state.model.encode_playlist(pt, pl)  # (1, output_dim)
-    emb = emb_tensor.cpu().numpy().squeeze().astype(np.float32)
+        emb_tensor = state.model.encode_playlist(pt, pl)
+    return emb_tensor.cpu().numpy().squeeze().astype(np.float32)
 
-    # Store in Redis with TTL
+
+async def _get_playlist_embedding(playlist_id: int) -> tuple[np.ndarray, bool]:
+    """Retrieve playlist embedding from Redis or compute it in a worker thread."""
+    cache_key = f"{CACHE_KEY_PREFIX}{playlist_id}"
+    redis_val = await state.redis_client.get(cache_key)
+
+    if redis_val is not None:
+        CACHE_HITS.inc()
+        return np.frombuffer(redis_val, dtype=np.float32), True
+
+    CACHE_MISSES.inc()
+    emb = await run_in_threadpool(_compute_playlist_embedding, playlist_id)
     await state.redis_client.setex(cache_key, CACHE_TTL, emb.tobytes())
     return emb, False
 
@@ -255,20 +256,17 @@ def _check_drift(embedding: np.ndarray):
 
 # ─── Endpoints ────────────────────────────────────────────────────────────────
 @app.post("/recommend", response_model=RecommendResponse)
-async def recommend(req: RecommendRequest):
+async def recommend(req: RecommendRequest, background_tasks: BackgroundTasks):
     start = time.perf_counter()
 
     if req.playlist_id not in state.playlist_track_map:
         raise HTTPException(status_code=404, detail="Playlist not found")
 
     playlist_emb, from_cache = await _get_playlist_embedding(req.playlist_id)
-    top_indices = _find_top_k(playlist_emb, req.top_k)
+    top_indices = await run_in_threadpool(_find_top_k, playlist_emb, req.top_k)
 
-    # Drift detection (async-style: don't block response)
-    try:
-        _check_drift(playlist_emb)
-    except Exception as e:
-        logger.debug(f"Drift check error (non-fatal): {e}")
+    # Drift detection is non-critical and runs after the response in a worker thread.
+    background_tasks.add_task(_check_drift, playlist_emb)
 
     elapsed = time.perf_counter() - start
     LATENCY.observe(elapsed)
