@@ -29,7 +29,7 @@ import mlflow.pytorch
 import numpy as np
 import torch
 from sklearn.mixture import GaussianMixture
-from torch.utils.data import DataLoader, random_split
+from torch.utils.data import DataLoader
 from tqdm import tqdm
 
 # ── resolve src/ on the path ──────────────────────────────────────────────────
@@ -76,14 +76,10 @@ def train():
     print("=" * 60)
     print("STEP 1: Loading and preprocessing data")
     print("=" * 60)
-    playlists = load_playlists(DATA_DIR, MAX_PLAYLISTS)
-    track2idx, playlist2idx = build_vocabularies(playlists)
-    playlist_track_map = create_playlist_track_map(playlists, track2idx)
+    playlist_iter = lambda: load_playlists(DATA_DIR, MAX_PLAYLISTS)
+    track2idx, playlist2idx = build_vocabularies(playlist_iter())
+    playlist_track_map = create_playlist_track_map(playlist_iter(), track2idx)
     num_tracks = len(track2idx)
-
-    triples = generate_training_pairs(playlist_track_map, num_tracks, NUM_NEGATIVES)
-    if not triples:
-        raise RuntimeError("No training triples generated. Check data loading.")
 
     # Save vocab for the API to use
     save_vocab(track2idx, playlist_track_map, ARTIFACTS_DIR)
@@ -92,13 +88,19 @@ def train():
     valid_pids = sorted(playlist_track_map.keys())
     np.save(os.path.join(ARTIFACTS_DIR, "valid_playlist_ids.npy"), np.array(valid_pids))
 
-    dataset = PlaylistTrackDataset(triples, max_context_len=20)
-    val_size = max(1, int(0.1 * len(dataset)))
-    train_size = len(dataset) - val_size
-    train_ds, val_ds = random_split(dataset, [train_size, val_size])
+    train_ds = PlaylistTrackDataset(
+        lambda: generate_training_pairs(
+            playlist_track_map, num_tracks, NUM_NEGATIVES, split="train"
+        )
+    )
+    val_ds = PlaylistTrackDataset(
+        lambda: generate_training_pairs(
+            playlist_track_map, num_tracks, NUM_NEGATIVES, split="val"
+        )
+    )
 
-    train_loader = DataLoader(train_ds, batch_size=BATCH_SIZE, shuffle=True, num_workers=0)
-    val_loader   = DataLoader(val_ds,   batch_size=BATCH_SIZE, shuffle=False, num_workers=0)
+    train_loader = DataLoader(train_ds, batch_size=BATCH_SIZE, num_workers=0)
+    val_loader = DataLoader(val_ds, batch_size=BATCH_SIZE, num_workers=0)
 
     # ── 2. Model ──────────────────────────────────────────────────────────────
     print("\n" + "=" * 60)
@@ -130,7 +132,7 @@ def train():
         mlflow.log_param("num_negatives",   NUM_NEGATIVES)
         mlflow.log_param("num_tracks",      num_tracks)
         mlflow.log_param("num_playlists",   len(playlist_track_map))
-        mlflow.log_param("train_samples",   train_size)
+        mlflow.log_param("training_data_mode", "streaming")
         mlflow.log_param("device",          DEVICE)
         mlflow.log_param("seed",            SEED)
 
