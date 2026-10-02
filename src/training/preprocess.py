@@ -35,7 +35,7 @@ def load_playlists(data_dir: str, max_playlists: int = 1000) -> Iterator[dict]:
     print(f"Streamed {loaded} playlists from {data_dir}")
 
 
-def _generate_synthetic_data(num_playlists: int = 1000) -> List[dict]:
+def _generate_synthetic_data(num_playlists: int = 1000) -> Iterator[dict]:
     """Generate synthetic playlist data for demo/testing."""
     num_tracks = 5000
     rng = random.Random(42)
@@ -49,13 +49,11 @@ def _generate_synthetic_data(num_playlists: int = 1000) -> List[dict]:
                 "track_name": f"Track {tid}",
                 "artist_name": f"Artist {tid % 500}",
             })
-        playlists.append({
+        yield {
             "pid": pid,
             "name": f"Playlist {pid}",
             "tracks": tracks,
-        })
-    print(f"Generated {num_playlists} synthetic playlists with up to 5000 tracks.")
-    return playlists
+        }
 
 
 def build_vocabularies(playlists: List[dict]) -> Tuple[Dict, Dict]:
