@@ -102,7 +102,7 @@ data/
   ...
 ```
 
-The training script will automatically use only the first `MAX_PLAYLISTS` playlists (default: 1000) for fast iteration.
+The training pipeline streams playlists from the JSON files and generates training triples lazily, while using only the first `MAX_PLAYLISTS` playlists (default: 1000) for fast iteration.
 
 ### Option B: Synthetic Data (for demo / testing)
 
@@ -122,6 +122,10 @@ pip install -r requirements.txt
 mlflow server --backend-store-uri sqlite:///mlflow.db \
               --default-artifact-root ./mlflow_artifacts \
               --host 0.0.0.0 --port 5001 &
+
+export MLFLOW_TRACKING_URI=http://localhost:5001
+# Optional: choose a reproducible training seed
+export SEED=42
 
 # Run training
 bash scripts/run_training.sh
@@ -290,6 +294,7 @@ All settings are controlled via environment variables (set in `docker-compose.ym
 | `NUM_EPOCHS` | `10` | Training epochs |
 | `LEARNING_RATE` | `1e-3` | Adam learning rate |
 | `BATCH_SIZE` | `256` | Training batch size |
+| `SEED` | `42` | Random seed for reproducible training |
 
 ---
 
