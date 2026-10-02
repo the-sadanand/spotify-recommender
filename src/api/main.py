@@ -19,6 +19,7 @@ from typing import Optional
 
 import mlflow.pytorch
 import numpy as np
+import faiss
 import redis
 import torch
 from fastapi import FastAPI, HTTPException
@@ -71,6 +72,7 @@ class AppState:
     redis_client:       Optional[redis.Redis]   = None
     recent_embeddings:  deque                   = deque(maxlen=DRIFT_WINDOW)
     num_tracks:         int                     = 0
+    track_index:        Optional[faiss.Index]  = None
 
 
 state = AppState()
@@ -83,9 +85,20 @@ async def lifespan(app: FastAPI):
 
     # 1. Track embeddings
     emb_path = os.path.join(ARTIFACTS_DIR, "track_embeddings.npy")
-    state.track_embeddings = np.load(emb_path)
+    state.track_embeddings = np.load(emb_path).astype(np.float32, copy=False)
     state.num_tracks = len(state.track_embeddings)
-    logger.info(f"Loaded track embeddings: shape={state.track_embeddings.shape}")
+
+    # Track embeddings are L2-normalized by the model, so HNSW L2 search
+    # preserves cosine-similarity ranking while providing ANN retrieval.
+    state.track_index = faiss.IndexHNSWFlat(
+        state.track_embeddings.shape[1], 32
+    )
+    state.track_index.hnsw.efSearch = 64
+    state.track_index.add(state.track_embeddings)
+    logger.info(
+        f"Loaded track embeddings: shape={state.track_embeddings.shape}, "
+        f"FAISS index={state.track_index.ntotal}"
+    )
 
     # 2. Baseline distribution
     dist_path = os.path.join(ARTIFACTS_DIR, "training_track_distribution.pkl")
@@ -187,14 +200,14 @@ def _get_playlist_embedding(playlist_id: int) -> tuple[np.ndarray, bool]:
 
 
 def _find_top_k(playlist_emb: np.ndarray, top_k: int) -> list[int]:
-    """Dot-product search over all track embeddings."""
-    scores = state.track_embeddings @ playlist_emb   # (num_tracks,)
-    # Get top_k+1 to have buffer (avoid returning exact same track)
-    k = min(top_k, len(scores))
-    top_indices = np.argpartition(scores, -k)[-k:]
-    top_indices = top_indices[np.argsort(scores[top_indices])[::-1]]
-    # Track indices are 0-based in embedding array, map back to raw IDs
-    return top_indices.tolist()
+    """Retrieve top-K tracks with the FAISS HNSW ANN index."""
+    if top_k <= 0 or state.track_index is None:
+        return []
+
+    k = min(top_k, state.num_tracks)
+    query = np.asarray(playlist_emb, dtype=np.float32).reshape(1, -1)
+    _, indices = state.track_index.search(query, k)
+    return indices[0].tolist()
 
 
 def _check_drift(embedding: np.ndarray):
